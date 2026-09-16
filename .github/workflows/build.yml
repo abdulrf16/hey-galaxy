@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    defaults:
+      run:
+        working-directory: heygalaxy
 
     steps:
       - name: Checkout code
@@ -34,7 +37,7 @@ jobs:
         with:
           name: HeyGalaxy-debug
           path: |
-            app/build/outputs/apk/debug/*.apk
-            app/build/outputs/apk/debug/**/*.apk
+            heygalaxy/app/build/outputs/apk/debug/*.apk
+            heygalaxy/app/build/outputs/apk/debug/**/*.apk
           retention-days: 30
           if-no-files-found: verbose
