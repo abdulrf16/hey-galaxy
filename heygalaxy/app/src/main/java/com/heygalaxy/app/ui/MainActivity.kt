@@ -28,7 +28,7 @@ class MainActivity : AppCompatActivity() {
             val command = intent.getStringExtra(VoiceListenerService.EXTRA_LAST_COMMAND)
             runOnUiThread {
                 statusText.text = status
-                if (command.isNotBlank()) {
+                if (!command.isNullOrBlank()) {
                     lastCommandText.text = "Last: \"$command\""
                     lastCommandText.visibility = View.VISIBLE
                 } else {
