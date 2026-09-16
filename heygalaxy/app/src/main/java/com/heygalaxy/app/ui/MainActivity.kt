@@ -1,13 +1,16 @@
 package com.heygalaxy.app.ui
 
+import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.heygalaxy.app.R
@@ -49,25 +52,45 @@ class MainActivity : AppCompatActivity() {
         permissionsFab = findViewById(R.id.permissionsFab)
 
         startStopFab.setOnClickListener {
-            if (serviceRunning) stopService() else startService()
+            if (serviceRunning) stopService() else startServiceIfPermitted()
         }
         permissionsFab.setOnClickListener {
             startActivity(Intent(this, PermissionsActivity::class.java))
         }
 
-        startService()
+        startServiceIfPermitted()
+    }
+
+    private fun hasRecordAudioPermission(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            this, Manifest.permission.RECORD_AUDIO
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun startServiceIfPermitted() {
+        if (hasRecordAudioPermission()) {
+            startService()
+        } else {
+            statusText.text = "Microphone permission needed. Tap 'Check Permissions' below."
+            startActivity(Intent(this, PermissionsActivity::class.java))
+        }
     }
 
     private fun startService() {
-        val intent = Intent(this, VoiceListenerService::class.java)
-        startForegroundService(intent)
-        serviceRunning = true
-        startStopFab.setImageResource(android.R.drawable.ic_media_pause)
-        micView.animate().scaleX(1.3f).scaleY(1.3f).setDuration(500)
-            .withEndAction {
-                micView.animate().scaleX(1f).scaleY(1f).setDuration(500)
-                    .withEndAction { if (serviceRunning) pulseMic() }.start()
-            }.start()
+        try {
+            val intent = Intent(this, VoiceListenerService::class.java)
+            startForegroundService(intent)
+            serviceRunning = true
+            startStopFab.setImageResource(android.R.drawable.ic_media_pause)
+            micView.animate().scaleX(1.3f).scaleY(1.3f).setDuration(500)
+                .withEndAction {
+                    micView.animate().scaleX(1f).scaleY(1f).setDuration(500)
+                        .withEndAction { if (serviceRunning) pulseMic() }.start()
+                }.start()
+        } catch (e: Exception) {
+            serviceRunning = false
+            statusText.text = "Couldn't start the assistant. Check permissions and try again."
+        }
     }
 
     private fun stopService() {
