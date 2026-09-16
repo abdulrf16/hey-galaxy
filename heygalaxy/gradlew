@@ -1,0 +1,42 @@
+#!/bin/sh
+#
+# Gradle startup script for UNIX
+#
+
+# Resolve links and find the project root
+APP_HOME="$(cd "$(dirname "$0")" && pwd -P)"
+
+# Determine the Java command
+if [ -n "$JAVA_HOME" ] ; then
+    JAVA_CMD="$JAVA_HOME/bin/java"
+else
+    JAVA_CMD="java"
+fi
+
+GRADLE_WRAPPER_JAR="$APP_HOME/gradle/wrapper/gradle-wrapper.jar"
+GRADLE_WRAPPER_PROPERTIES="$APP_HOME/gradle/wrapper/gradle-wrapper.properties"
+
+# If wrapper jar doesn't exist, download it
+if [ ! -f "$GRADLE_WRAPPER_JAR" ]; then
+    WRAPPER_URL="https://github.com/gradle/gradle/raw/v8.6.0/gradle/wrapper/gradle-wrapper.jar"
+    echo "Downloading Gradle wrapper JAR..."
+    if command -v curl > /dev/null 2>&1; then
+        curl -fsSL "$WRAPPER_URL" -o "$GRADLE_WRAPPER_JAR" || {
+            echo "Failed to download wrapper with curl, trying wget..."
+            if command -v wget > /dev/null 2>&1; then
+                wget -q "$WRAPPER_URL" -O "$GRADLE_WRAPPER_JAR"
+            fi
+        }
+    elif command -v wget > /dev/null 2>&1; then
+        wget -q "$WRAPPER_URL" -O "$GRADLE_WRAPPER_JAR"
+    fi
+fi
+
+if [ -f "$GRADLE_WRAPPER_JAR" ]; then
+    exec "$JAVA_CMD" -Xmx1500m -Xms256m -classpath "$GRADLE_WRAPPER_JAR" \
+        org.gradle.wrapper.GradleWrapperMain "$@"
+else
+    echo "ERROR: Cannot find or download gradle-wrapper.jar"
+    echo "Please ensure you have internet access or install Gradle manually."
+    exit 1
+fi
